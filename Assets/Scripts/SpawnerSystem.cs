@@ -1,6 +1,7 @@
 ﻿using Unity.Entities;
 using Unity.Transforms;
 using Unity.Burst;
+using Unity.Mathematics;
 
 [BurstCompile]
 public partial struct SpawnerSystem : ISystem
@@ -29,8 +30,11 @@ public partial struct SpawnerSystem : ISystem
             // Spawns a new entity and positions it at the spawner.
             Entity newEntity = state.EntityManager.Instantiate(spawner.ValueRO.Prefab);
             // LocalPosition.FromPosition returns a Transform initialized with the given position.
-            state.EntityManager.SetComponentData(newEntity, LocalTransform.FromPosition(spawner.ValueRO.SpawnPosition));
-
+            state.EntityManager.SetComponentData(newEntity, LocalTransform.FromPosition(
+                spawner.ValueRO.SpawnPosition +
+                new float3(UnityEngine.Random.Range(-5f,5f),0,UnityEngine.Random.Range(-5f,5f))
+                ));
+            
             // Resets the next spawn time.
             spawner.ValueRW.NextSpawnTime = (float)SystemAPI.Time.ElapsedTime + spawner.ValueRO.SpawnRate;
         }

@@ -5,6 +5,7 @@ class SpawnerAuthoring : MonoBehaviour
 {
     public GameObject Prefab;
     public float SpawnRate;
+    //public Transform target;
 }
 
 class SpawnerBaker : Baker<SpawnerAuthoring>
@@ -19,7 +20,8 @@ class SpawnerBaker : Baker<SpawnerAuthoring>
             Prefab = GetEntity(authoring.Prefab, TransformUsageFlags.Dynamic),
             SpawnPosition = authoring.transform.position,
             NextSpawnTime = 0.0f,
-            SpawnRate = authoring.SpawnRate
+            SpawnRate = authoring.SpawnRate,
+            //TargetPos = authoring.target.position,
         });
     }
 }
