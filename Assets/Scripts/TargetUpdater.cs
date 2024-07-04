@@ -8,23 +8,24 @@ public class TargetUpdater : MonoBehaviour
     
     private void Update()
     {
-        EntityManager em = World.DefaultGameObjectInjectionWorld.EntityManager;
+        //EntityManager em = World.DefaultGameObjectInjectionWorld.EntityManager;
         
-        SystemHandle sh = World.DefaultGameObjectInjectionWorld.GetExistingSystem<NavAgentSystem>();
+        //SystemHandle sh = World.DefaultGameObjectInjectionWorld.GetExistingSystem<NavAgentSystem>();
+        
         //SystemAPI.SetComponent(sh,new NavAgentSystem());
         //em.GetComponentData<NavAgentSystem>(sh);
         //em.SetComponentData<NavAgentSystem>(sh, new NavAgentSystem());
 
         
-        EntityQuery query = new EntityQueryBuilder(Allocator.Temp)
-            .WithAllRW<NavAgentTargetComponent>()
-            .Build(em);
-        
-        NavAgentTargetComponent natc = new NavAgentTargetComponent()
-        {
-            targetPosition = target.position,
-        };
-        em.SetSharedComponent(query, natc);
+        // EntityQuery query = new EntityQueryBuilder(Allocator.Temp)
+        //     .WithAllRW<NavAgentTargetComponent>()
+        //     .Build(em);
+        //
+        // NavAgentTargetComponent natc = new NavAgentTargetComponent()
+        // {
+        //     targetPosition = target.position,
+        // };
+        // em.SetSharedComponent(query, natc);
         
         // foreach (Entity entity in query.ToEntityArray(Allocator.Temp))
         // {

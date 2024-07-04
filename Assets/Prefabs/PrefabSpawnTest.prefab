@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4770220403562527272}
   - component: {fileID: 7573041252743694665}
+  - component: {fileID: -4526550518490392246}
   m_Layer: 0
   m_Name: PrefabSpawnTest
   m_TagString: Untagged
@@ -45,8 +46,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 269033d3a2cf472d92ffec1c7c29d305, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetTransform: {fileID: 0}
   moveSpeed: 2
+--- !u!114 &-4526550518490392246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 904960267399256498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f4bd0af5a5142ebb3e41f166b656a5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4677390159906815024
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,7 +160,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.5000001
   m_Height: 2

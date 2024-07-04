@@ -8,59 +8,35 @@ using UnityEngine.Experimental.AI;
 
 public partial struct NavAgentSystem: ISystem
 {
-    public float3 TargetPosSys;
+    //public float3 TargetPosSys;
     
-    [BurstCompile]
+    
     public void OnUpdate(ref SystemState state)
     {
+        var playerSingleton = PlayerSingleton.Instance;
+        //float radius = playerSingleton.KillRadius;
+        float3 pos = playerSingleton.Position;
+        
+        //TODO move condition to another system and add enablecomponent to indicate if recalculation is needed
         foreach (var (navAgentComponent, transform, navAgentTargetComponent, waypointBuffer) in SystemAPI.Query<RefRW<NavAgentComponent>, RefRW<LocalTransform>, NavAgentTargetComponent, DynamicBuffer<WaypointBuffer>>())
         {
             if (navAgentComponent.ValueRO.nextPathCalculateTime < SystemAPI.Time.ElapsedTime)
             {
                 navAgentComponent.ValueRW.nextPathCalculateTime += 1;
                 navAgentComponent.ValueRW.pathCalculated = false;
-                CalculatePath(navAgentComponent, transform, navAgentTargetComponent, waypointBuffer, ref state);
-            }
-            else
-            {
-                Move(navAgentComponent, transform, waypointBuffer, ref state);
+                CalculatePath(navAgentComponent, transform, navAgentTargetComponent, waypointBuffer, ref state, pos);
             }
         }
     }
-
+    
     [BurstCompile]
-    private void Move(RefRW<NavAgentComponent> navAgent, RefRW<LocalTransform> transform, DynamicBuffer<WaypointBuffer> waypointBuffer, ref SystemState state)
-    {
-        if (waypointBuffer.IsEmpty)
-        {
-            return;
-        }
-        if (math.distance(transform.ValueRO.Position, waypointBuffer[navAgent.ValueRO.currentWaypoint].wayPoint) < 0.4f)
-        {
-            if (navAgent.ValueRO.currentWaypoint + 1 < waypointBuffer.Length)
-            {
-                navAgent.ValueRW.currentWaypoint += 1;
-            }
-        }
-        
-        float3 direction = waypointBuffer[navAgent.ValueRO.currentWaypoint].wayPoint - transform.ValueRO.Position;
-        float angle = math.PI * 0.5f - math.atan2(direction.z, direction.x);
-
-        transform.ValueRW.Rotation = math.slerp(
-            transform.ValueRW.Rotation,
-            quaternion.Euler(new float3(0, angle, 0)),
-            SystemAPI.Time.DeltaTime);
-
-        transform.ValueRW.Position += math.normalize(direction) * SystemAPI.Time.DeltaTime * navAgent.ValueRO.moveSpeed;
-    }
-
-    [BurstCompile]
-    private void CalculatePath(RefRW<NavAgentComponent> navAgent, RefRW<LocalTransform> transform, NavAgentTargetComponent navAgentTargetComponent, DynamicBuffer<WaypointBuffer> waypointBuffer, ref SystemState state)
+    private void CalculatePath(RefRW<NavAgentComponent> navAgent, RefRW<LocalTransform> transform, NavAgentTargetComponent navAgentTargetComponent, DynamicBuffer<WaypointBuffer> waypointBuffer, ref SystemState state, float3 pos)
     {
         NavMeshQuery query = new NavMeshQuery(NavMeshWorld.GetDefaultWorld(), Allocator.TempJob, 1024);
 
         float3 fromPosition = transform.ValueRO.Position;
-        float3 toPosition = navAgentTargetComponent.targetPosition;
+        float3 toPosition = pos;
+        //float3 toPosition = navAgentTargetComponent.targetPosition;
         float3 extents = new float3(2, 2, 2);
 
         NavMeshLocation fromLocation = query.MapLocation(fromPosition, extents, 0);
