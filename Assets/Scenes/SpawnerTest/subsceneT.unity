@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 904960267399256498, guid: 28dd37798f1c5d042ba58430dde54d1f, type: 3}
-  SpawnRate: 0.2
+  SpawnRate: 2
 --- !u!4 &103183975
 Transform:
   m_ObjectHideFlags: 0
@@ -514,7 +514,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 904960267399256498, guid: 28dd37798f1c5d042ba58430dde54d1f, type: 3}
-  SpawnRate: 0.2
+  SpawnRate: 2
 --- !u!4 &664092370
 Transform:
   m_ObjectHideFlags: 0
@@ -561,7 +561,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 904960267399256498, guid: 28dd37798f1c5d042ba58430dde54d1f, type: 3}
-  SpawnRate: 0.2
+  SpawnRate: 2
 --- !u!4 &768542485
 Transform:
   m_ObjectHideFlags: 0
@@ -1001,7 +1001,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 904960267399256498, guid: 28dd37798f1c5d042ba58430dde54d1f, type: 3}
-  SpawnRate: 0.2
+  SpawnRate: 2
 --- !u!4 &1521703745
 Transform:
   m_ObjectHideFlags: 0
@@ -1048,7 +1048,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 904960267399256498, guid: 28dd37798f1c5d042ba58430dde54d1f, type: 3}
-  SpawnRate: 0.2
+  SpawnRate: 2
 --- !u!4 &1948122144
 Transform:
   m_ObjectHideFlags: 0
@@ -1095,7 +1095,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 904960267399256498, guid: 28dd37798f1c5d042ba58430dde54d1f, type: 3}
-  SpawnRate: 0.2
+  SpawnRate: 2
 --- !u!4 &1954762942
 Transform:
   m_ObjectHideFlags: 0

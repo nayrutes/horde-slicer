@@ -24,6 +24,55 @@ public partial struct SpatialHashing : ISystem
         return (int)(math.floor(pos.x / cellSize) + (zMultiplyer * math.floor(pos.z / cellSize)));
     }
 
+    // public static MultiCellIterator GetSelfAndAdjacent(float3 pos)
+    // {
+    //     return new MultiCellIterator(multiHashMap, pos, cellSize);
+    // }
+    public static bool TryGetFirstValue(float3 pos, out CellDataEntry item, out MultiCellIterator it)
+    {
+        int[] adjacentKeys = new int[9];
+        int index = 0;
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                float3 adjacentPos = pos + new float3(x * cellSize, y * cellSize, 0);
+                adjacentKeys[index++] = GetPositionHashKey(adjacentPos);
+            }
+        }
+
+        it = new MultiCellIterator(adjacentKeys);
+        return TryGetNextValue(out item, ref it);
+    }
+
+    public static bool TryGetNextValue(out CellDataEntry item, ref MultiCellIterator it)
+    {
+        while (it.CurrentKeyIndex < it.Keys.Length)
+        {
+            if (!it.IsInitialized)
+            {
+                it.IsInitialized = true;
+                if (multiHashMap.TryGetFirstValue(it.Keys[it.CurrentKeyIndex], out item, out it.Iterator))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if (multiHashMap.TryGetNextValue(out item, ref it.Iterator))
+                {
+                    return true;
+                }
+            }
+
+            it.CurrentKeyIndex++;
+            it.IsInitialized = false;
+        }
+
+        item = default;
+        return false;
+    }
+
     private static void DebugDrawCell(float3 pos, float4 color)
     {
         Color c = new Color(color.x, color.y, color.z, color.w);
@@ -79,7 +128,7 @@ public partial struct SpatialHashing : ISystem
         {
             multiHashMap = multiHashMap.AsParallelWriter(),
         };
-        JobHandle jh = setHashMapDataJob.ScheduleParallel(entityQuery,new JobHandle());
+        JobHandle jh = setHashMapDataJob.ScheduleParallel(entityQuery,state.Dependency);
         jh.Complete();
         //setHashMapDataJob.Schedule(entityQuery);
         
@@ -129,4 +178,20 @@ public partial struct SpatialHashing : ISystem
         }
     }
     
+}
+
+public struct MultiCellIterator
+{
+    public NativeParallelMultiHashMapIterator<int> Iterator;
+    public int[] Keys;
+    public int CurrentKeyIndex;
+    public bool IsInitialized;
+
+    public MultiCellIterator(int[] keys)
+    {
+        Keys = keys;
+        CurrentKeyIndex = 0;
+        IsInitialized = false;
+        Iterator = new NativeParallelMultiHashMapIterator<int>();
+    }
 }

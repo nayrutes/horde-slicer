@@ -1,4 +1,5 @@
 ﻿using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class NavAgentAuthoring : MonoBehaviour
@@ -12,12 +13,33 @@ public class NavAgentAuthoring : MonoBehaviour
         {
             Entity authoringEntity = GetEntity(TransformUsageFlags.Dynamic);
             
-            AddComponent(authoringEntity, new NavAgentComponent
+            AddComponent<NavAgentComponent>(authoringEntity);
+            AddComponent(authoringEntity, new NavAgentMoveComponent()
             {
                 moveSpeed = authoring.moveSpeed
             });
-            AddSharedComponent(authoringEntity, new NavAgentTargetComponent());
+            //AddSharedComponent(authoringEntity, new NavAgentTargetComponent());
             AddBuffer<WaypointBuffer>(authoringEntity);
         }
     }
+}
+
+public struct NavAgentComponent : IComponentData
+{
+    public bool pathCalculated;
+    public int currentWaypoint;
+    public float nextPathCalculateTime;
+}
+
+public struct WaypointBuffer: IBufferElementData{
+    public float3 wayPoint;
+    
+}
+
+public struct NavAgentMoveComponent : IComponentData
+{
+    public float moveSpeed;
+    public float3 velocity;
+    public float3 direction;
+    public float3 avoidanceDirection;
 }
