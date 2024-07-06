@@ -14,10 +14,12 @@ public class NavAgentAuthoring : MonoBehaviour
             Entity authoringEntity = GetEntity(TransformUsageFlags.Dynamic);
             
             AddComponent<NavAgentComponent>(authoringEntity);
-            AddComponent(authoringEntity, new NavAgentMoveComponent()
+            AddComponent(authoringEntity, new MoveComponent()
             {
-                moveSpeed = authoring.moveSpeed
+                MoveSpeed = authoring.moveSpeed
             });
+            AddComponent(authoringEntity, new NavigationDirection().SetEnabled(true));
+            AddComponent(authoringEntity, new AvoidanceDirection().SetEnabled(true));
             //AddSharedComponent(authoringEntity, new NavAgentTargetComponent());
             AddBuffer<WaypointBuffer>(authoringEntity);
         }
@@ -26,20 +28,46 @@ public class NavAgentAuthoring : MonoBehaviour
 
 public struct NavAgentComponent : IComponentData
 {
-    public bool pathCalculated;
-    public int currentWaypoint;
-    public float nextPathCalculateTime;
+    public bool PathCalculated;
+    public int CurrentWaypoint;
+    public float NextPathCalculateTime;
 }
 
 public struct WaypointBuffer: IBufferElementData{
-    public float3 wayPoint;
+    public float3 WayPoint;
     
 }
 
-public struct NavAgentMoveComponent : IComponentData, IEnableableComponent
+public struct MoveComponent : IComponentData
 {
-    public float moveSpeed;
-    public float3 velocity;
-    public float3 direction;
-    public float3 avoidanceDirection;
+    public float MoveSpeed;
+    public float3 Velocity;
+    public float3 Direction;
+}
+
+public struct NavigationDirection : IComponentData
+{
+    public float3 Direction;
+    private bool _enabled;
+    public bool HasWayPoint;
+    public bool IsEnabled => _enabled && HasWayPoint;
+
+    public NavigationDirection SetEnabled(bool b)
+    {
+        _enabled = b;
+        return this;
+    }
+}
+
+public struct AvoidanceDirection : IComponentData
+{
+    public float3 Direction;
+    private bool _enabled;
+    public bool IsEnabled => _enabled;
+
+    public AvoidanceDirection SetEnabled(bool b)
+    {
+        _enabled = b;
+        return this;
+    }
 }

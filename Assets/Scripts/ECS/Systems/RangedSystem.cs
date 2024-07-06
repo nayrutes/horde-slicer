@@ -40,7 +40,7 @@ public partial struct RangedSystem : ISystem
         public float3 targetPos;
         public EntityCommandBuffer.ParallelWriter Ecb;
         
-        public void Execute([ChunkIndexInQuery] int chunkIndex, ref LocalTransform transform, ref Ranged ranged, Entity entity)
+        public void Execute([ChunkIndexInQuery] int chunkIndex, ref LocalTransform transform, ref Ranged ranged, ref NavigationDirection navDirection, Entity entity)
         {
             float distSq = math.distancesq(targetPos, transform.Position);
             bool aboveMin = distSq > ranged.MinDistance * ranged.MinDistance;
@@ -48,9 +48,9 @@ public partial struct RangedSystem : ISystem
             float midDist = (ranged.MinDistance + ranged.MaxDistance)/2.0f;
             bool belowMid = distSq < midDist * midDist;
             
+            navDirection.SetEnabled(!belowMid);
+            
             Ecb.SetComponentEnabled<Shooting>(chunkIndex, entity, aboveMin && belowMax);
-            Ecb.SetComponentEnabled<NavAgentMoveComponent>(chunkIndex, entity, !belowMid);
-
         }
     }
 }

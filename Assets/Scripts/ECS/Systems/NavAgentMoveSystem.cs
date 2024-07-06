@@ -11,51 +11,64 @@ public partial struct NavAgentMoveSystem : ISystem
     //[BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (transform, waypointBuffer, moveComponent) in SystemAPI.Query<RefRW<LocalTransform>, DynamicBuffer<WaypointBuffer>, RefRW<NavAgentMoveComponent>>())
+        foreach (var (transform, waypointBuffer, moveComponent, navigationDirection, avoidanceDirection) in 
+                 SystemAPI.Query<RefRW<LocalTransform>, DynamicBuffer<WaypointBuffer>, RefRW<MoveComponent>, RefRO<NavigationDirection>, RefRO<AvoidanceDirection>>())
         {
             if (!waypointBuffer.IsEmpty)
             {
-                Move(transform, moveComponent, ref state);
+                Move(transform, navigationDirection, avoidanceDirection, moveComponent, ref state);
             }
         }
     }
 
     [BurstCompile]
-    private void Move(RefRW<LocalTransform> transform, RefRW<NavAgentMoveComponent> moveComponent,
+    private void Move(RefRW<LocalTransform> transform, 
+        RefRO<NavigationDirection> navigationDirection, 
+        RefRO<AvoidanceDirection> avoidanceDirection, 
+        RefRW<MoveComponent> moveComponent,
         ref SystemState systemState)
     {
-        float3 direction = moveComponent.ValueRO.direction;
-        
-        if (direction.Equals(float3.zero))
-        {
-            Debug.Log("Direction 0,0,0 hit");
-            //return;
-        }
-        
+        float3 combinedDirection = float3.zero;
         float targetWeight = 1.0f;
         float avoidanceWeight = 1.5f;
-        
-        float3 avoidanceDirection = moveComponent.ValueRO.avoidanceDirection;
-        float3 combinedDirection = direction * targetWeight + avoidanceDirection * avoidanceWeight;
-        
-        if (combinedDirection.Equals(float3.zero))
+
+        if (navigationDirection.ValueRO.IsEnabled)
         {
-            Debug.Log("Combined Direction 0,0,0 hit");
-            return;
+            combinedDirection += targetWeight * navigationDirection.ValueRO.Direction;
         }
-        float3 combinedDirectionNormalized = math.normalize(combinedDirection);
+
+        if (avoidanceDirection.ValueRO.IsEnabled)
+        {
+            combinedDirection += avoidanceWeight * avoidanceDirection.ValueRO.Direction;
+        }
+
+        moveComponent.ValueRW.Direction = combinedDirection;
+        //float3 navDirection = navigationDirection.ValueRO.Direction;
+        
+        // if (navDirection.Equals(float3.zero))
+        // {
+        //     Debug.Log("Direction 0,0,0 hit");
+        //     //return;
+        // }
         
         
-        float angle = math.PI * 0.5f - math.atan2(combinedDirectionNormalized.z, combinedDirectionNormalized.x);
-        transform.ValueRW.Rotation = math.slerp(
-            transform.ValueRW.Rotation,
-            quaternion.Euler(new float3(0, angle, 0)),
-            SystemAPI.Time.DeltaTime);
+        //float3 avoidanceDirectionV = avoidanceDirection.ValueRO.Direction;
+        //combinedDirection = navDirection * targetWeight + avoidanceDirectionV * avoidanceWeight;
+        
+        if (!combinedDirection.Equals(float3.zero))
+        {
+            float3 combinedDirectionNormalized = math.normalize(combinedDirection);
+        
+            float angle = math.PI * 0.5f - math.atan2(combinedDirectionNormalized.z, combinedDirectionNormalized.x);
+            transform.ValueRW.Rotation = math.slerp(
+                transform.ValueRW.Rotation,
+                quaternion.Euler(new float3(0, angle, 0)),
+                SystemAPI.Time.DeltaTime);
+        }
         
         
-        float3 velocityOld = moveComponent.ValueRO.velocity;
-        //math.normalize(direction);
-        float3 targetVel = combinedDirection * moveComponent.ValueRO.moveSpeed;
+        float3 targetVel = combinedDirection * moveComponent.ValueRO.MoveSpeed;
+        float3 velocityOld = moveComponent.ValueRO.Velocity;
         float3 velocityLerp = math.lerp(velocityOld, targetVel, SystemAPI.Time.DeltaTime);
         
         if (velocityLerp.Equals(float3.zero))
@@ -66,10 +79,10 @@ public partial struct NavAgentMoveSystem : ISystem
         
         float vL = math.length(velocityLerp);
         float3 vDir = math.normalize(velocityLerp);
-        vL = math.clamp(vL, 0, moveComponent.ValueRO.moveSpeed);
+        vL = math.clamp(vL, 0, moveComponent.ValueRO.MoveSpeed);
         
         velocityLerp = vDir * vL;
-        moveComponent.ValueRW.velocity = velocityLerp;
+        moveComponent.ValueRW.Velocity = velocityLerp;
         transform.ValueRW.Position += velocityLerp * SystemAPI.Time.DeltaTime;
         //transform.ValueRW.Position += moveComponent.ValueRO.velocity * SystemAPI.Time.DeltaTime;
         

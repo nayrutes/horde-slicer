@@ -39,12 +39,12 @@ public partial struct NavAgentPathSystem: ISystem
         //     new NativeArray<JobHandle>(entityQuery.CalculateEntityCount(), Allocator.TempJob);
         foreach (var (navAgentComponent, transform, waypointBuffer) in SystemAPI.Query<RefRW<NavAgentComponent>, RefRO<LocalTransform>, DynamicBuffer<WaypointBuffer>>())
         {
-            if (navAgentComponent.ValueRO.nextPathCalculateTime >= SystemAPI.Time.ElapsedTime)
+            if (navAgentComponent.ValueRO.NextPathCalculateTime >= SystemAPI.Time.ElapsedTime)
             {
                 continue;
             }
-            navAgentComponent.ValueRW.nextPathCalculateTime += 1;
-            navAgentComponent.ValueRW.pathCalculated = false;
+            navAgentComponent.ValueRW.NextPathCalculateTime += 1;
+            navAgentComponent.ValueRW.PathCalculated = false;
             CalculatePath(navAgentComponent, transform, waypointBuffer, ref state, pos);
             
             // NavMeshQuery query = new NavMeshQuery(NavMeshWorld.GetDefaultWorld(), Allocator.TempJob, 1024);
@@ -139,12 +139,12 @@ public partial struct NavAgentPathSystem: ISystem
                             {
                                 if (location.position != Vector3.zero)
                                 {
-                                    waypointBuffer.Add(new WaypointBuffer { wayPoint = location.position });
+                                    waypointBuffer.Add(new WaypointBuffer { WayPoint = location.position });
                                 }
                             }
 
-                            navAgent.currentWaypoint = 0;
-                            navAgent.pathCalculated = true;
+                            navAgent.CurrentWaypoint = 0;
+                            navAgent.PathCalculated = true;
                         }
                         straightPathFlag.Dispose();
                         polygonIds.Dispose();
@@ -215,12 +215,12 @@ public partial struct NavAgentPathSystem: ISystem
                         {
                             if (location.position != Vector3.zero)
                             {
-                                waypointBuffer.Add(new WaypointBuffer { wayPoint = location.position });
+                                waypointBuffer.Add(new WaypointBuffer { WayPoint = location.position });
                             }
                         }
 
-                        navAgent.ValueRW.currentWaypoint = 0;
-                        navAgent.ValueRW.pathCalculated = true;
+                        navAgent.ValueRW.CurrentWaypoint = 0;
+                        navAgent.ValueRW.PathCalculated = true;
                     }
                     straightPathFlag.Dispose();
                     polygonIds.Dispose();

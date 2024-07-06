@@ -12,45 +12,28 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
    
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (transform, moveComponent, entity) in SystemAPI.Query<RefRO<LocalTransform>, RefRW<NavAgentMoveComponent>>().WithEntityAccess())
+        foreach (var (transform, avoidanceDirection, entity) in SystemAPI.Query<RefRO<LocalTransform>, RefRW<AvoidanceDirection>>().WithEntityAccess())
         {
-            Avoid(transform, moveComponent, entity, ref state);
+            Avoid(transform, avoidanceDirection, entity, ref state);
         }
     }
     
     [BurstCompile]
-    private void Avoid(RefRO<LocalTransform> transform, RefRW<NavAgentMoveComponent> moveComponent, Entity entity,
+    private void Avoid(RefRO<LocalTransform> transform, RefRW<AvoidanceDirection> avoidanceDirection, Entity entity,
         ref SystemState state)
     {
         float3 pos = transform.ValueRO.Position;
-        //int key = SpatialHashing.GetPositionHashKey(pos);
-        //NativeParallelMultiHashMap<int, CellDataEntry> multiHashMap = SpatialHashing.multiHashMap;
-        //NativeParallelMultiHashMapIterator<int> nmhKeyIterator;
         MultiCellIterator nmhKeyIterator;
         CellDataEntry currentLocationToCheck;
-        float currentSqDistance = 3f;
         float currentDistance = 2f;
-        int total = 0;
-        float3 avoidanceDirection = float3.zero;
+        float3 avoidanceDirectionV = float3.zero;
         
         if (SpatialHashingSystem.TryGetFirstValue(pos, out currentLocationToCheck, out nmhKeyIterator))
         {
             do
             {
-                //if (math.lengthsq(pos - currentLocationToCheck.Position) > (0.25f*0.25f))
                 if (!currentLocationToCheck.Entity.Equals(entity))
                 {
-                    // float3 vecFromTo = pos - currentLocationToCheck.Position;
-                    // float toCheckSqDist = math.lengthsq(vecFromTo);
-                    // if (currentSqDistance > toCheckSqDist)
-                    // {
-                    //     //currentSqDistance = math.sqrt(toCheckSqDist);
-                    //     currentSqDistance = toCheckSqDist;
-                    //     //float3 distanceFromTo = pos - currentLocationToCheck.Position;
-                    //     avoidanceDirection = math.normalize(vecFromTo / math.sqrt(currentSqDistance));
-                    //     total++;
-                    // }
-
                     float3 toOther = pos - currentLocationToCheck.Position;
                     if (toOther.Equals(float3.zero))
                     {
@@ -61,19 +44,17 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
                     if (currentDistance > math.sqrt(math.lengthsq(toOther)))
                     {
                         currentDistance = math.sqrt(math.lengthsq(toOther));
-                        //float3 distanceFromTo = pos - currentLocationToCheck.Position;
-                        avoidanceDirection = math.normalizesafe(toOther / currentDistance);
-                        //avoidanceDirection = distanceFromTo;
+                        avoidanceDirectionV = math.normalizesafe(toOther / currentDistance);
                         Debug.DrawLine(pos,currentLocationToCheck.Position, Color.cyan);
                     }
                 }
             } while (SpatialHashingSystem.TryGetNextValue(out currentLocationToCheck, ref nmhKeyIterator));
         }
-        avoidanceDirection.y = 0;
-        if (!avoidanceDirection.Equals(float3.zero))
+        avoidanceDirectionV.y = 0;
+        if (!avoidanceDirectionV.Equals(float3.zero))
         {
-            Debug.DrawLine(transform.ValueRO.Position, transform.ValueRO.Position + avoidanceDirection);
+            Debug.DrawLine(transform.ValueRO.Position, transform.ValueRO.Position + avoidanceDirectionV);
         }
-        moveComponent.ValueRW.avoidanceDirection = avoidanceDirection;
+        avoidanceDirection.ValueRW.Direction = avoidanceDirectionV;
     }
 }
