@@ -1,10 +1,16 @@
 using UnityEngine;
 using Unity.Entities;
+using Unity.Mathematics;
+using UnityEngine.Serialization;
 
 class SpawnerAuthoring : MonoBehaviour
 {
-    public GameObject Prefab;
+    [FormerlySerializedAs("Prefab")] public GameObject prefabMelee;
+    public GameObject prefabRanged;
     public float SpawnRate;
+    public int GridWidth = 1;
+    public int GridDepth = 1;
+    public float Spacing = 1;
     //public Transform target;
 }
 
@@ -17,11 +23,26 @@ class SpawnerBaker : Baker<SpawnerAuthoring>
         {
             // By default, each authoring GameObject turns into an Entity.
             // Given a GameObject (or authoring component), GetEntity looks up the resulting Entity.
-            Prefab = GetEntity(authoring.Prefab, TransformUsageFlags.Dynamic),
+            PrefabMelee = GetEntity(authoring.prefabMelee, TransformUsageFlags.Dynamic),
+            PrefabRanged = GetEntity(authoring.prefabRanged, TransformUsageFlags.Dynamic),
             SpawnPosition = authoring.transform.position,
             NextSpawnTime = 0.0f,
             SpawnRate = authoring.SpawnRate,
-            //TargetPos = authoring.target.position,
+            GridWidth = authoring.GridWidth,
+            GridDepth = authoring.GridDepth,
+            Spacing = authoring.Spacing
         });
     }
+}
+
+public struct Spawner : IComponentData
+{
+    public Entity PrefabMelee;
+    public Entity PrefabRanged;
+    public float3 SpawnPosition;
+    public float NextSpawnTime;
+    public float SpawnRate;
+    public int GridWidth;
+    public int GridDepth;
+    public float Spacing;
 }

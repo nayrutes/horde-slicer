@@ -28,6 +28,8 @@ public partial struct SpatialHashing : ISystem
     // {
     //     return new MultiCellIterator(multiHashMap, pos, cellSize);
     // }
+    
+    //TODO find bug when two adjacent cells have one entity, they are not found?
     public static bool TryGetFirstValue(float3 pos, out CellDataEntry item, out MultiCellIterator it)
     {
         int[] adjacentKeys = new int[9];

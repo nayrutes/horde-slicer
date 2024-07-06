@@ -50,11 +50,19 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
                     //     avoidanceDirection = math.normalize(vecFromTo / math.sqrt(currentSqDistance));
                     //     total++;
                     // }
-                    if (currentDistance > math.sqrt(math.lengthsq(pos - currentLocationToCheck.Position)))
+
+                    float3 toOther = pos - currentLocationToCheck.Position;
+                    if (toOther.Equals(float3.zero))
                     {
-                        currentDistance = math.sqrt(math.lengthsq(pos - currentLocationToCheck.Position));
-                        float3 distanceFromTo = pos - currentLocationToCheck.Position;
-                        avoidanceDirection = math.normalize(distanceFromTo / currentDistance);
+                        Debug.Log($"To other is 0,0,0");
+                        toOther = new float3(0.1f, 0, 0);
+                    }
+                    
+                    if (currentDistance > math.sqrt(math.lengthsq(toOther)))
+                    {
+                        currentDistance = math.sqrt(math.lengthsq(toOther));
+                        //float3 distanceFromTo = pos - currentLocationToCheck.Position;
+                        avoidanceDirection = math.normalizesafe(toOther / currentDistance);
                         //avoidanceDirection = distanceFromTo;
                         Debug.DrawLine(pos,currentLocationToCheck.Position, Color.cyan);
                     }
@@ -62,7 +70,6 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
             } while (SpatialHashing.TryGetNextValue(out currentLocationToCheck, ref nmhKeyIterator));
         }
         avoidanceDirection.y = 0;
-        avoidanceDirection *= 2;
         if (!avoidanceDirection.Equals(float3.zero))
         {
             Debug.DrawLine(transform.ValueRO.Position, transform.ValueRO.Position + avoidanceDirection);

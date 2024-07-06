@@ -36,7 +36,7 @@ public struct WaypointBuffer: IBufferElementData{
     
 }
 
-public struct NavAgentMoveComponent : IComponentData
+public struct NavAgentMoveComponent : IComponentData, IEnableableComponent
 {
     public float moveSpeed;
     public float3 velocity;

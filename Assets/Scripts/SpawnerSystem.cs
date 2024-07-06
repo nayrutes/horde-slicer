@@ -37,19 +37,39 @@ public partial struct SpawnerSystem : ISystem, ISystemStartStop
         {
             if (spawner.ValueRO.NextSpawnTime < elapsedTime)
             {
-                // Spawns a new entity and positions it at the spawner.
-                Entity newEntity = ecb.Instantiate(chunkIndex, spawner.ValueRO.Prefab);
-                // LocalPosition.FromPosition returns a Transform initialized with the given position.
-                ecb.SetComponent(chunkIndex, newEntity, LocalTransform.FromPosition(
-                    spawner.ValueRO.SpawnPosition +
-                    new float3(0,0,0)
-                    ));
+                int gridWidth = spawner.ValueRO.GridWidth;
+                int gridDepth = spawner.ValueRO.GridDepth;
+                float spacing = spawner.ValueRO.Spacing;
+
+                float offsetX = (gridWidth - 1) * spacing / 2.0f;
+                float offsetZ = (gridDepth - 1) * spacing / 2.0f;
+
+                for (int i = 0; i < gridWidth; i++)
+                {
+                    for (int j = 0; j < gridDepth; j++)
+                    {
+                        int d = ((int)elapsedTime + i * 3 + j * 7 % 2);
+                        Entity prefab = d==0 ? spawner.ValueRO.PrefabMelee : spawner.ValueRO.PrefabRanged;
+                        float3 posOffset = new float3(i * spacing - offsetX, 0, j * spacing - offsetZ);
+                        InstantiateEntity(chunkIndex, spawner, prefab, posOffset);
+                    }
+                }
                 
-                // Resets the next spawn time.
+
                 spawner.ValueRW.NextSpawnTime = (float)elapsedTime + spawner.ValueRO.SpawnRate;
             }
         }
+
+        private void InstantiateEntity(int chunkIndex, RefRW<Spawner> spawner, Entity prefab, float3 posOffset)
+        {
+            Entity newEntity = ecb.Instantiate(chunkIndex, prefab);
+
+            ecb.SetComponent(chunkIndex, newEntity, LocalTransform.FromPosition(
+                spawner.ValueRO.SpawnPosition + posOffset));
+        }
     }
+
+    
     // public void OnCreate(ref SystemState state) { }
     //
     // public void OnDestroy(ref SystemState state) { }

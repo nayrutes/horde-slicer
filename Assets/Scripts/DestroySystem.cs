@@ -6,6 +6,7 @@ using Unity.Entities;
 [UpdateInGroup(typeof(LateSimulationSystemGroup))]
 public partial struct DestroySystem : ISystem
 {
+    
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
@@ -30,6 +31,21 @@ public partial struct DestroySystem : ISystem
         var entityArray = entityQuery.ToEntityArray(Allocator.Temp);
         state.EntityManager.DestroyEntity(entityArray);
 
+        EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
         
+        foreach ((RefRW<ProjectileDestroy> projectileDestroy, Entity entity) in SystemAPI.Query<RefRW<ProjectileDestroy>>().WithEntityAccess())
+        {
+            if (projectileDestroy.ValueRO.TimeToDestroy <= 0)
+            {
+                ecb.DestroyEntity(entity);
+                //state.EntityManager.DestroyEntity(entity);
+                continue;
+            }
+
+            projectileDestroy.ValueRW.TimeToDestroy -= SystemAPI.Time.DeltaTime;
+        }
+        
+        ecb.Playback(state.EntityManager);
+        ecb.Dispose();
     }
 }
