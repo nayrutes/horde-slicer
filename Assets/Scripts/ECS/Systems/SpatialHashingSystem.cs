@@ -14,7 +14,7 @@ public struct CellDataEntry
     public float3 Position;
 }
 
-public partial struct SpatialHashing : ISystem
+public partial struct SpatialHashingSystem : ISystem
 {
     private const int zMultiplyer = 1000;
     private const int cellSize = 5;

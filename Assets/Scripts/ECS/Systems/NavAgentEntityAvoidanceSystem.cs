@@ -6,7 +6,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [UpdateBefore(typeof(NavAgentMoveSystem))]
-[UpdateAfter(typeof(SpatialHashing))]
+[UpdateAfter(typeof(SpatialHashingSystem))]
 public partial struct NavAgentEntityAvoidanceSystem : ISystem
 {
    
@@ -33,7 +33,7 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
         int total = 0;
         float3 avoidanceDirection = float3.zero;
         
-        if (SpatialHashing.TryGetFirstValue(pos, out currentLocationToCheck, out nmhKeyIterator))
+        if (SpatialHashingSystem.TryGetFirstValue(pos, out currentLocationToCheck, out nmhKeyIterator))
         {
             do
             {
@@ -67,7 +67,7 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
                         Debug.DrawLine(pos,currentLocationToCheck.Position, Color.cyan);
                     }
                 }
-            } while (SpatialHashing.TryGetNextValue(out currentLocationToCheck, ref nmhKeyIterator));
+            } while (SpatialHashingSystem.TryGetNextValue(out currentLocationToCheck, ref nmhKeyIterator));
         }
         avoidanceDirection.y = 0;
         if (!avoidanceDirection.Equals(float3.zero))
