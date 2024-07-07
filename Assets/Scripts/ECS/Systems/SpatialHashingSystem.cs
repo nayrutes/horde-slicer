@@ -17,28 +17,25 @@ public struct CellDataEntry
 public partial struct SpatialHashingSystem : ISystem
 {
     private const int zMultiplyer = 1000;
-    private const int cellSize = 5;
+    private const int cellSize = 3;
+
+    private bool debugView;
+    
     public static NativeParallelMultiHashMap<int, CellDataEntry> multiHashMap;
     public static int GetPositionHashKey(float3 pos)
     {
         return (int)(math.floor(pos.x / cellSize) + (zMultiplyer * math.floor(pos.z / cellSize)));
     }
-
-    // public static MultiCellIterator GetSelfAndAdjacent(float3 pos)
-    // {
-    //     return new MultiCellIterator(multiHashMap, pos, cellSize);
-    // }
     
-    //TODO find bug when two adjacent cells have one entity, they are not found?
     public static bool TryGetFirstValue(float3 pos, out CellDataEntry item, out MultiCellIterator it)
     {
         int[] adjacentKeys = new int[9];
         int index = 0;
         for (int x = -1; x <= 1; x++)
         {
-            for (int y = -1; y <= 1; y++)
+            for (int z = -1; z <= 1; z++)
             {
-                float3 adjacentPos = pos + new float3(x * cellSize, y * cellSize, 0);
+                float3 adjacentPos = pos + new float3(x * cellSize, 0, z * cellSize);
                 adjacentKeys[index++] = GetPositionHashKey(adjacentPos);
             }
         }
@@ -100,10 +97,10 @@ public partial struct SpatialHashingSystem : ISystem
     //[BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        
+        debugView = PlayerSingleton.Instance.SpatialHashingDebug;
         EntityQuery entityQuery = SystemAPI.QueryBuilder()
             .WithAll<Enemy>()
-            .WithAll<LocalToWorld>()
+            .WithAll<LocalTransform>()
             .Build();
 
         multiHashMap.Clear();
@@ -113,27 +110,26 @@ public partial struct SpatialHashingSystem : ISystem
             multiHashMap.Capacity = entityCount;
         }
         
-        var ecb = new EntityCommandBuffer(Allocator.Temp);
-        var queryURP = SystemAPI.QueryBuilder().WithAll<URPMaterialPropertyBaseColor>().Build();
-        //Debug.Log($"URP hits: {queryURP.CalculateEntityCount()}");
-        EntityQueryMask queryMask = queryURP.GetEntityQueryMask();
-        
-        var random = new Random(123);
-        
-        // foreach (var (transform, entity) in SystemAPI.Query<RefRO<LocalToWorld>>().WithAll<Enemy>().WithEntityAccess())
-        // {
-        //     int key = GetPositionHashKey(transform.ValueRO.Position);
-        //     multiHashMap.Add(key, entity);
-        // }
-
         SetHashMapDataJob setHashMapDataJob = new SetHashMapDataJob()
         {
             multiHashMap = multiHashMap.AsParallelWriter(),
         };
-        JobHandle jh = setHashMapDataJob.ScheduleParallel(entityQuery,state.Dependency);
+        JobHandle jh = setHashMapDataJob.ScheduleParallel(state.Dependency);
         jh.Complete();
-        //setHashMapDataJob.Schedule(entityQuery);
+        state.Dependency = jh;
+
+
+        if (!debugView)
+        {
+            return;
+        }
         
+        var random = new Random(123);
+        var ecb = new EntityCommandBuffer(Allocator.Temp);
+        var queryURP = SystemAPI.QueryBuilder().WithAll<URPMaterialPropertyBaseColor>().Build();
+        //Debug.Log($"URP hits: {queryURP.CalculateEntityCount()}");
+        EntityQueryMask queryMask = queryURP.GetEntityQueryMask();
+
         for (int i = -9; i < 9; i++)
         {
             for (int j = -9; j < 9; j++)
@@ -163,19 +159,19 @@ public partial struct SpatialHashingSystem : ISystem
         return (Vector4)Color.HSVToRGB(hue, 1.0f, 1.0f);
     }
 
-    [BurstCompile]
+    [BurstCompile] [WithAll(typeof(Enemy))]
     private partial struct SetHashMapDataJob : IJobEntity
     {
         public NativeParallelMultiHashMap<int, CellDataEntry>.ParallelWriter multiHashMap;
 
         [BurstCompile]
-        public void Execute(in LocalToWorld localToWorld, in Entity entity)
+        public void Execute(in LocalTransform localTransform, Entity entity)
         {
-            int key = GetPositionHashKey(localToWorld.Position);
+            int key = GetPositionHashKey(localTransform.Position);
             multiHashMap.Add(key, new CellDataEntry()
             {
                 Entity = entity,
-                Position = localToWorld.Position,
+                Position = localTransform.Position,
             });
         }
     }

@@ -11,6 +11,8 @@ class SpawnerAuthoring : MonoBehaviour
     public int GridWidth = 1;
     public int GridDepth = 1;
     public float Spacing = 1;
+
+    public bool OneShot = true;
     //public Transform target;
 }
 
@@ -30,7 +32,9 @@ class SpawnerBaker : Baker<SpawnerAuthoring>
             SpawnRate = authoring.SpawnRate,
             GridWidth = authoring.GridWidth,
             GridDepth = authoring.GridDepth,
-            Spacing = authoring.Spacing
+            Spacing = authoring.Spacing,
+            OneShot = authoring.OneShot,
+            IsEnabled = true,
         });
     }
 }
@@ -45,4 +49,6 @@ public struct Spawner : IComponentData
     public int GridWidth;
     public int GridDepth;
     public float Spacing;
+    public bool OneShot;
+    public bool IsEnabled { get; set; }
 }

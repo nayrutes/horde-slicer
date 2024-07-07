@@ -53,6 +53,7 @@ MonoBehaviour:
   GridWidth: 1
   GridDepth: 1
   Spacing: 1
+  OneShot: 0
 --- !u!1 &6128984163004117087
 GameObject:
   m_ObjectHideFlags: 0

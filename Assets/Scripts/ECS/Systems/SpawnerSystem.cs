@@ -33,13 +33,18 @@ public partial struct SpawnerSystem : ISystem, ISystemStartStop
         public double elapsedTime;
 
         [BurstCompile]
-        public void Execute([ChunkIndexInQuery] int chunkIndex, RefRW<Spawner> spawner)
+        public void Execute([ChunkIndexInQuery] int chunkIndex, ref Spawner spawner)
         {
-            if (spawner.ValueRO.NextSpawnTime < elapsedTime)
+            if (!spawner.IsEnabled)
             {
-                int gridWidth = spawner.ValueRO.GridWidth;
-                int gridDepth = spawner.ValueRO.GridDepth;
-                float spacing = spawner.ValueRO.Spacing;
+                return;
+            }
+            
+            if (spawner.NextSpawnTime < elapsedTime)
+            {
+                int gridWidth = spawner.GridWidth;
+                int gridDepth = spawner.GridDepth;
+                float spacing = spawner.Spacing;
 
                 float offsetX = (gridWidth - 1) * spacing / 2.0f;
                 float offsetZ = (gridDepth - 1) * spacing / 2.0f;
@@ -48,24 +53,28 @@ public partial struct SpawnerSystem : ISystem, ISystemStartStop
                 {
                     for (int j = 0; j < gridDepth; j++)
                     {
-                        int d = ((int)elapsedTime + i * 3 + j * 7 % 2);
-                        Entity prefab = d==0 ? spawner.ValueRO.PrefabMelee : spawner.ValueRO.PrefabRanged;
+                        int d = (((int)elapsedTime) + i * 3 + j * 7 % 2);
+                        Entity prefab = d==0 ? spawner.PrefabMelee : spawner.PrefabRanged;
                         float3 posOffset = new float3(i * spacing - offsetX, 0, j * spacing - offsetZ);
-                        InstantiateEntity(chunkIndex, spawner, prefab, posOffset);
+                        InstantiateEntity(chunkIndex, ref spawner, prefab, posOffset);
                     }
                 }
                 
 
-                spawner.ValueRW.NextSpawnTime = (float)elapsedTime + spawner.ValueRO.SpawnRate;
+                spawner.NextSpawnTime = (float)elapsedTime + spawner.SpawnRate;
+                if (spawner.OneShot)
+                {
+                    spawner.IsEnabled = false;
+                }
             }
         }
 
-        private void InstantiateEntity(int chunkIndex, RefRW<Spawner> spawner, Entity prefab, float3 posOffset)
+        private void InstantiateEntity(int chunkIndex, ref Spawner spawner, Entity prefab, float3 posOffset)
         {
             Entity newEntity = ecb.Instantiate(chunkIndex, prefab);
 
             ecb.SetComponent(chunkIndex, newEntity, LocalTransform.FromPosition(
-                spawner.ValueRO.SpawnPosition + posOffset));
+                spawner.SpawnPosition + posOffset));
         }
     }
 

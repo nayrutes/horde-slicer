@@ -9,6 +9,8 @@ public class PlayerSingleton: MonoBehaviour
     [SerializeField] private float killRadius;
 
     private GameObject playerGo;
+    [SerializeField] public bool SpatialHashingDebug;
+    public bool AvoidanceDebug;
     public float3 Position => playerGo.transform.position;
     public float KillRadius => killRadius;
     private void Awake()

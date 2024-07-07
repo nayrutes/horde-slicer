@@ -7,11 +7,12 @@ using UnityEngine;
 
 [UpdateBefore(typeof(NavAgentMoveSystem))]
 [UpdateAfter(typeof(SpatialHashingSystem))]
-public partial struct NavAgentEntityAvoidanceSystem : ISystem
+public partial struct EntityAvoidanceSystem : ISystem
 {
-   
+    private bool debugView;
     public void OnUpdate(ref SystemState state)
     {
+        debugView = PlayerSingleton.Instance.AvoidanceDebug;
         foreach (var (transform, avoidanceDirection, entity) in SystemAPI.Query<RefRO<LocalTransform>, RefRW<AvoidanceDirection>>().WithEntityAccess())
         {
             Avoid(transform, avoidanceDirection, entity, ref state);
@@ -40,18 +41,25 @@ public partial struct NavAgentEntityAvoidanceSystem : ISystem
                         Debug.Log($"To other is 0,0,0");
                         toOther = new float3(0.1f, 0, 0);
                     }
-                    
+
+                    if (debugView)
+                    {
+                        Debug.DrawLine(pos,currentLocationToCheck.Position, Color.red);
+                    }
                     if (currentDistance > math.sqrt(math.lengthsq(toOther)))
                     {
                         currentDistance = math.sqrt(math.lengthsq(toOther));
                         avoidanceDirectionV = math.normalizesafe(toOther / currentDistance);
-                        Debug.DrawLine(pos,currentLocationToCheck.Position, Color.cyan);
+                        if (debugView)
+                        {
+                            Debug.DrawLine(pos,currentLocationToCheck.Position, Color.cyan);
+                        }
                     }
                 }
             } while (SpatialHashingSystem.TryGetNextValue(out currentLocationToCheck, ref nmhKeyIterator));
         }
         avoidanceDirectionV.y = 0;
-        if (!avoidanceDirectionV.Equals(float3.zero))
+        if (!avoidanceDirectionV.Equals(float3.zero) && debugView)
         {
             Debug.DrawLine(transform.ValueRO.Position, transform.ValueRO.Position + avoidanceDirectionV);
         }

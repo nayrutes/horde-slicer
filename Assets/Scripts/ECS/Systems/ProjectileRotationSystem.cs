@@ -25,7 +25,7 @@ public partial struct ProjectileRotationSystem : ISystem
     }
 }
     
-[BurstCompile]
+[BurstCompile][WithNone(typeof(ProjectileDestroy))]
 public partial struct OrientProjectileJob : IJobEntity
 {
     public void Execute(ref LocalTransform transform, in Projectile projectile)
