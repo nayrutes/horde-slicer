@@ -17,6 +17,7 @@ public partial struct KillZoneSystem : ISystem
         var playerSingleton = PlayerSingleton.Instance;
         float radius = playerSingleton.KillRadius;
         float3 pos = playerSingleton.Position;
+        bool isAttackActive = playerSingleton.IsAttackActive;
 
         // Debug rendering (the white circle).
         const float debugRenderStepInDegrees = 20;
@@ -26,9 +27,12 @@ public partial struct KillZoneSystem : ISystem
             var b = float3.zero;
             math.sincos(math.radians(angle), out a.x, out a.z);
             math.sincos(math.radians(angle + debugRenderStepInDegrees), out b.x, out b.z);
-            Debug.DrawLine(pos+ (a * radius),pos + (b * radius));
+            Debug.DrawLine(pos+ (a * radius),pos + (b * radius), isAttackActive? Color.red : Color.white);
         }
 
+        if (!isAttackActive)
+            return;
+        
         //TODO consider fetching close-by entities first and execute job on them. Or, reverse by adding tags
         //which entities to check and then execute job on them
         var safeZoneJob = new KillZoneJob
