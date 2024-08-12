@@ -29,6 +29,8 @@ public partial struct KillZoneSystem : ISystem
             Debug.DrawLine(pos+ (a * radius),pos + (b * radius));
         }
 
+        //TODO consider fetching close-by entities first and execute job on them. Or, reverse by adding tags
+        //which entities to check and then execute job on them
         var safeZoneJob = new KillZoneJob
         {
             SquaredRadius = radius * radius,
@@ -46,10 +48,9 @@ public partial struct KillZoneJob : IJobEntity
     public float SquaredRadius;
     public float3 Pos;
 
-    // Because we want the global position of a child entity, we read LocalToWorld instead of LocalTransform.
+    // Because we want the global position of a child entity, we read LocalToWorld instead of LocalTransform. <- (Not sure i this still applies after changes)
     void Execute(in LocalToWorld transformMatrix, EnabledRefRW<ToDestroy> toDestroyState)
     {
-        //toDestroyState.ValueRW = math.lengthsq(transformMatrix.Position) < SquaredRadius;
         toDestroyState.ValueRW = math.distancesq(Pos,transformMatrix.Position) < SquaredRadius;
     }
 }
