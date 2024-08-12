@@ -65,6 +65,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f4bd0af5a5142ebb3e41f166b656a5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MeleeDamage: 1.1
+  MeleeCooldown: 1
+  MeleeRadius: 1.5
 --- !u!33 &1071430387892779625
 MeshFilter:
   m_ObjectHideFlags: 0

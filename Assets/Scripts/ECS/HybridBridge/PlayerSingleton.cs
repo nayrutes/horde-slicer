@@ -27,4 +27,9 @@ public class PlayerSingleton: MonoBehaviour
 
         Instance = this;
     }
+
+    public void ApplyDamage(float totalDamage)
+    {
+        Debug.Log($"Player received {totalDamage} damage");
+    }
 }
