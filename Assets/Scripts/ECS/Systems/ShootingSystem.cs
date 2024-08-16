@@ -43,7 +43,8 @@ public partial struct ShootingSystem: ISystem, ISystemStartStop
                 Entity e = InstantiateEntity(chunkIndex, pos, shooter.ValueRO.PrefabProjectile);
                 ecb.AddComponent(chunkIndex, e, new Projectile()
                 {
-                    Velocity = CalculateInitialVelocity(pos, targetPos)
+                    Velocity = CalculateInitialVelocity(pos, targetPos),
+                    
                 });
                 
                 shooter.ValueRW.CurrentCoolDown = shooter.ValueRO.CoolDownReset;
@@ -84,6 +85,9 @@ public partial struct ShootingSystem: ISystem, ISystemStartStop
         
         float3 CalculateInitialVelocity(float3 start, float3 target)
         {
+            // Offsetting target to hit above the ground
+            target.y += 2.0f;
+            
             // Calculate the distance to the target
             float3 direction = target - start;
             float3 directionXZ = new float3(direction.x, 0, direction.z);

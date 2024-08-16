@@ -1,6 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -16,7 +17,6 @@ public partial struct ProjectileMoveSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.TempJob);
-        //transform.ValueRW.Position += moveComponent.ValueRO.velocity * SystemAPI.Time.DeltaTime;
         var job = new MoveProjectileJob()
         {
             DeltaTime = SystemAPI.Time.DeltaTime,
@@ -24,8 +24,8 @@ public partial struct ProjectileMoveSystem : ISystem
             Ecb = ecb.AsParallelWriter(),
         };
 
-        state.Dependency = job.ScheduleParallel(state.Dependency);
-        state.Dependency.Complete();
+        JobHandle handle = job.ScheduleParallel(state.Dependency);
+        handle.Complete();
         ecb.Playback(state.EntityManager);
         ecb.Dispose();
     }
@@ -36,7 +36,7 @@ public partial struct ProjectileMoveSystem : ISystem
 
     }
     
-    [BurstCompile][WithNone(typeof(ProjectileDestroy))]
+    [BurstCompile][WithNone(typeof(ProjectileDestroy), typeof(ProjectileHitPlayer))]
     public partial struct MoveProjectileJob : IJobEntity
     {
         public float DeltaTime;
