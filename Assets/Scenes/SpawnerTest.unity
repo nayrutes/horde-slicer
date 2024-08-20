@@ -1486,6 +1486,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   killRadius: 2
+  isAttackActive: 0
   SpatialHashingDebug: 0
   AvoidanceDebug: 0
 --- !u!1 &783611526

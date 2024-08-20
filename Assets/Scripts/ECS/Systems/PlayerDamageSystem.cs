@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using ECS.AuthoringAndComponenets;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -38,7 +39,6 @@ namespace ECS.Systems
                 DamageArray = damagesProjectile,
                 PlayerPos = pos,
                 Ecb = ecb.AsParallelWriter(),
-            
             };
             JobHandle handleProjectile = damageJobProjectile.ScheduleParallel(enemyDamageQueryProjectile, state.Dependency);
             
@@ -94,7 +94,7 @@ namespace ECS.Systems
         public float3 PlayerPos;
         public NativeArray<float> DamageArray;
         public EntityCommandBuffer.ParallelWriter Ecb;
-
+        
         public void Execute(ref Projectile projectile, in LocalTransform transform, in ProjectileSettings projSet, [EntityIndexInQuery] int index, Entity entity)
         {
             bool isInRange = math.distancesq(PlayerPos, transform.Position) < projSet.PlayerHitRadiusSquared;

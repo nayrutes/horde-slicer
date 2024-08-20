@@ -13,6 +13,7 @@ public class PlayerSingleton: MonoBehaviour
     [SerializeField] public bool SpatialHashingDebug;
     public bool AvoidanceDebug;
     public float3 Position => playerGo.transform.position;
+    public quaternion Rotation => playerGo.transform.rotation;
     public float KillRadius => killRadius;
     public bool IsAttackActive => isAttackActive;
 
